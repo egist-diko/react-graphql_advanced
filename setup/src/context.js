@@ -1,70 +1,64 @@
 import React, { useState, useContext, useEffect, useReducer } from "react";
-import { useCallback } from "react";
 import reducer from "./reducer";
+import { useQuery, gql } from "@apollo/client";
 
-const url = "https://www.thecocktaildb.com/api/json/v1/1/search.php?s=";
+const COCKTAILS_QUERY = gql`
+  query CocktailsQuery($strDrink: String) {
+    cocktail(idDrink: $strDrink) {
+      drinks {
+        strDrink
+        strDrinkThumb
+        strAlcoholic
+        strCategory
+        strGlass
+        strInstructions
+        strIngredient1
+        strIngredient2
+        strIngredient3
+        strIngredient4
+        strIngredient5
+      }
+    }
+  }
+`;
+
 const AppContext = React.createContext();
 
 const initialValues = {
   searchTerm: "",
   cocktails: [],
-  loading: true,
 };
 const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialValues);
+  const { data, loading, error } = useQuery(COCKTAILS_QUERY, {
+    variables: { strDrink: state.searchTerm },
+  });
 
-  const fetchDrinks = useCallback(async () => {
-    dispatch({ type: "SET_LOADING", payload: true });
-    try {
-      const response = await fetch(`${url}${state.searchTerm}`);
-      const data = await response.json();
-      const { drinks } = data;
-      if (drinks) {
-        const newCocktails = drinks.map((item) => {
-          const {
-            idDrink,
-            strDrink,
-            strDrinkThumb,
-            strAlcoholic,
-            strGlass,
-            strCategory,
-            strInstructions,
-            strIngredient1,
-            strIngredient2,
-            strIngredient3,
-            strIngredient4,
-            strIngredient5,
-          } = item;
-
-          const ingredients = [
-            strIngredient1,
-            strIngredient2,
-            strIngredient3,
-            strIngredient4,
-            strIngredient5,
-          ];
-
-          return {
-            id: idDrink,
-            name: strDrink,
-            image: strDrinkThumb,
-            info: strAlcoholic,
-            glass: strGlass,
-            category: strCategory,
-            instructions: strInstructions,
-            ingredients: ingredients,
-          };
-        });
-        dispatch({ type: "UPDATE_COCKTAILS", payload: newCocktails });
-      } else {
-        dispatch({ type: "UPDATE_COCKTAILS", payload: [] });
-      }
-      dispatch({ type: "SET_LOADING", payload: false });
-    } catch (error) {
-      console.log(error);
-      dispatch({ type: "SET_LOADING", payload: false });
-    }
-  }, [state.searchTerm]);
+  const fetchDrinks = () => {
+    // const { drinks } = data.drinks[0];
+    console.log(data);
+    // if (drinks) {
+    //   const newCocktails = drinks.map((item) => {
+    //     const {
+    //       idDrink,
+    //       strDrink,
+    //       strDrinkThumb,
+    //       strAlcoholic,
+    //       strGlass,
+    //     } = item;
+    //     return {
+    //       id: idDrink,
+    //       name: strDrink,
+    //       image: strDrinkThumb,
+    //       info: strAlcoholic,
+    //       glass: strGlass,
+    //     };
+    //   });
+    //   dispatch({ type: "UPDATE_COCKTAILS", payload: newCocktails });
+    // } else {
+    //   dispatch({ type: "UPDATE_COCKTAILS", payload: [] });
+    // }
+  };
 
   const setSearchTerm = (value) => {
     dispatch({ type: "SET_SEARCH_TERM", payload: value });

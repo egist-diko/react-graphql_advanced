@@ -38,9 +38,14 @@ const RootQuery = new GraphQLObjectType({
   fields: {
     cocktails: {
       type: CocktailType,
+      args: {
+        strDrink: { type: GraphQLString },
+      },
       resolve(parent, args) {
         return axios
-          .get("https://www.thecocktaildb.com/api/json/v1/1/search.php?s=")
+          .get(
+            `https://www.thecocktaildb.com/api/json/v1/1/search.php?s=${args.strDrink}`
+          )
           .then((res) => res.data);
       },
     },

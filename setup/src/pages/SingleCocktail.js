@@ -4,8 +4,8 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery, gql } from "@apollo/client";
 
 const COCKTAIL_QUERY = gql`
-  query CocktailQuery($id: String!) {
-    cocktail(idDrink: $id) {
+  query CocktailQuery($idDrink: String) {
+    cocktail(idDrink: $idDrink) {
       drinks {
         strDrink
         strDrinkThumb
@@ -28,63 +28,40 @@ export default function SingleCocktail() {
   const { data, loading, error } = useQuery(COCKTAIL_QUERY, {
     variables: { idDrink: id },
   });
-
-  // const [loading, setLoading] = React.useState(false);
   const [cocktail, setCocktail] = React.useState(null);
-  // const queryData = data.cocktail.drinks[0];
 
   React.useEffect(() => {
-    //   setLoading(true);
-    //   async function getCocktail() {
-    //     try {
-    //       const response = await fetch(
-    //         `https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=${id}`
-    //       );
-    //       const data = await response.json();
-    //       if (data.drinks) {
-    //         const {
-    //           strDrink: name,
-    //           strDrinkThumb: image,
-    //           strAlcoholic: info,
-    //           strCategory: category,
-    //           strGlass: glass,
-    //           strInstructions: instructions,
-    //           strIngredient1,
-    //           strIngredient2,
-    //           strIngredient3,
-    //           strIngredient4,
-    //           strIngredient5,
-    //         } = data.drinks[0];
-    //         const ingredients = [
-    //           strIngredient1,
-    //           strIngredient2,
-    //           strIngredient3,
-    //           strIngredient4,
-    //           strIngredient5,
-    //         ];
-    //         const newCocktail = {
-    //           name,
-    //           image,
-    //           info,
-    //           category,
-    //           glass,
-    //           instructions,
-    //           ingredients,
-    //         };
-    //         setCocktail(newCocktail);
-    //       } else {
-    //         setCocktail(null);
-    //       }
-    //     } catch (error) {
-    //       console.log(error);
-    //     }
-    //     setLoading(false);
-    //   }
-    //   getCocktail();
-    // setCocktail(queryData);
-  }, [id]);
+    if (!loading) {
+      const ingredients = [
+        data.cocktail.drinks[0].strIngredient1,
+        data.cocktail.drinks[0].strIngredient2,
+        data.cocktail.drinks[0].strIngredient3,
+        data.cocktail.drinks[0].strIngredient4,
+        data.cocktail.drinks[0].strIngredient5,
+      ];
+      const name = data.cocktail.drinks[0].strDrink;
+      const image = data.cocktail.drinks[0].strDrinkThumb;
+      const info = data.cocktail.drinks[0].strAlcoholic;
+      const category = data.cocktail.drinks[0].strCategory;
+      const glass = data.cocktail.drinks[0].strGlass;
+      const instructions = data.cocktail.drinks[0].strInstructions;
+      const newCocktail = {
+        name,
+        image,
+        info,
+        category,
+        glass,
+        instructions,
+        ingredients,
+      };
+      setCocktail(newCocktail);
+    }
+  }, [id, loading]);
   if (loading) {
     return <Loading />;
+  }
+  if (error) {
+    return <div>shit</div>;
   }
   if (!cocktail) {
     return <h2 className="section-title">no cocktail to display</h2>;
