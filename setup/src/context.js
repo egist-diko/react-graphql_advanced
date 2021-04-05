@@ -1,11 +1,18 @@
-import React, { useState, useContext, useEffect, useReducer } from "react";
+import React, {
+  useState,
+  useContext,
+  useEffect,
+  useReducer,
+  useRef,
+} from "react";
 import reducer from "./reducer";
 import { useQuery, gql } from "@apollo/client";
 
 const COCKTAILS_QUERY = gql`
   query CocktailsQuery($strDrink: String) {
-    cocktail(idDrink: $strDrink) {
+    cocktails(strDrink: $strDrink) {
       drinks {
+        idDrink
         strDrink
         strDrinkThumb
         strAlcoholic
@@ -28,6 +35,7 @@ const initialValues = {
   searchTerm: "",
   cocktails: [],
 };
+
 const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialValues);
   const { data, loading, error } = useQuery(COCKTAILS_QUERY, {
@@ -35,29 +43,32 @@ const AppProvider = ({ children }) => {
   });
 
   const fetchDrinks = () => {
-    // const { drinks } = data.drinks[0];
-    console.log(data);
-    // if (drinks) {
-    //   const newCocktails = drinks.map((item) => {
-    //     const {
-    //       idDrink,
-    //       strDrink,
-    //       strDrinkThumb,
-    //       strAlcoholic,
-    //       strGlass,
-    //     } = item;
-    //     return {
-    //       id: idDrink,
-    //       name: strDrink,
-    //       image: strDrinkThumb,
-    //       info: strAlcoholic,
-    //       glass: strGlass,
-    //     };
-    //   });
-    //   dispatch({ type: "UPDATE_COCKTAILS", payload: newCocktails });
-    // } else {
-    //   dispatch({ type: "UPDATE_COCKTAILS", payload: [] });
-    // }
+    if (!loading) {
+      console.log(state.searchTerm);
+      const { drinks } = data.cocktails;
+      console.log(drinks);
+      if (drinks) {
+        const newCocktails = drinks.map((item) => {
+          const {
+            idDrink,
+            strDrink,
+            strDrinkThumb,
+            strAlcoholic,
+            strGlass,
+          } = item;
+          return {
+            id: idDrink,
+            name: strDrink,
+            image: strDrinkThumb,
+            info: strAlcoholic,
+            glass: strGlass,
+          };
+        });
+        dispatch({ type: "UPDATE_COCKTAILS", payload: newCocktails });
+      } else {
+        dispatch({ type: "UPDATE_COCKTAILS", payload: [] });
+      }
+    }
   };
 
   const setSearchTerm = (value) => {
@@ -66,7 +77,7 @@ const AppProvider = ({ children }) => {
 
   useEffect(() => {
     fetchDrinks();
-  }, [state.searchTerm, fetchDrinks]);
+  }, [loading, state.searchTerm]);
 
   return (
     <AppContext.Provider

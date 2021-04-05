@@ -6,8 +6,7 @@ export default function SearchForm() {
 
   React.useEffect(() => {
     searchValue.current.focus();
-    console.log(searchValue.current.value);
-  }, []);
+  }, [searchValue.current.value]);
 
   function searchCocktail() {
     setSearchTerm(searchValue.current.value);
